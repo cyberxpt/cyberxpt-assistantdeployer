@@ -16,8 +16,9 @@ style.textContent = `
   .widget-header { padding: 10px 15px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; height: 45px; }
   .status-indicator { height: 8px; width: 8px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px; animation: pulse-green 2s infinite; vertical-align: middle; }
   @keyframes pulse-green { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(40, 167, 69, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); } }
-  .tabs { display: flex; background: #eee; padding: 5px 10px 0; }
-  .tab-btn { padding: 8px 15px; border: none; background: #ddd; cursor: pointer; border-radius: 5px 5px 0 0; margin-right: 5px; font-size: 13px; color: #666; }
+  .tabs { display: flex; background: #eee; padding: 5px 10px 0; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { padding: 8px 12px; border: none; background: #ddd; cursor: pointer; border-radius: 5px 5px 0 0; margin-right: 5px; font-size: 12px; color: #666; white-space: nowrap; }
   .tab-btn.active { background: #fff; color: #007bff; font-weight: bold; border: 1px solid #ddd; border-bottom: none; }
   .content-area { padding: 15px; }
   .lab-hidden { display: none !important; }
@@ -38,6 +39,9 @@ style.textContent = `
   .btn-ext { background: #28a745; color: white; border: none; padding: 10px; border-radius: 6px; flex: 1; cursor: pointer; font-weight: bold; }
   .btn-des { background: darkred; color: white; border: none; padding: 10px; border-radius: 6px; flex: 1; cursor: pointer; font-weight: bold; }
   .credit-card-box { text-align:center; padding: 20px; background: #f0fdf4; border-radius: 8px; border: 1px solid #dcfce7; }
+  .contact-box { text-align: center; padding: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; }
+  .email-link { color: #007bff; font-weight: bold; text-decoration: none; font-size: 14px; display: block; margin: 10px 0; }
+  .btn-email { display: inline-block; background: #007bff; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 12px; font-weight: bold; }
 `;
 document.head.appendChild(style);
 
@@ -57,6 +61,7 @@ widgetDiv.innerHTML = `
       <button class="tab-btn active" id="tab-deploy" onclick="switchTab('deploy')">Deployer</button>
       <button class="tab-btn" id="tab-status" onclick="switchTab('status')">Live Status</button>
       <button class="tab-btn" id="tab-credits" onclick="switchTab('credits')">Credits</button>
+      <button class="tab-btn" id="tab-contact" onclick="switchTab('contact')">Contact Us</button>
     </div>
     <div class="content-area">
       <div id="logged-out-view" style="display:none; text-align: center; padding: 20px;">
@@ -97,6 +102,7 @@ widgetDiv.innerHTML = `
           </div>
         </div>
       </div>
+
       <div id="credits-tab-content" class="tab-content lab-hidden">
         <div class="credit-card-box">
           <div style="font-size: 12px; color: #666;">Account Subscription</div>
@@ -104,6 +110,16 @@ widgetDiv.innerHTML = `
           <div id="expiry-notice" style="font-size: 11px; color: #dc3545; margin-top: 10px; font-style: italic;"></div>
         </div>
       </div>
+
+      <div id="contact-tab-content" class="tab-content lab-hidden">
+        <div class="contact-box">
+          <p style="font-size: 13px; color: #475569;">Encountered an issue or have an enquiry?</p>
+          <a href="mailto:info@cyberxpt.com" class="email-link">info@cyberxpt.com</a>
+          <a href="mailto:info@cyberxpt.com?subject=Lab Enquiry" class="btn-email">📧 Send Email</a>
+          <p style="font-size: 11px; color: #94a3b8; margin-top: 15px;">Include your Student ID for faster support.</p>
+        </div>
+      </div>
+
       <div id="footer-actions" style="margin-top:15px; border-top:1px solid #eee; padding-top:10px; display:none; text-align: right;">
         <button onclick="logoutUser()" style="font-size: 11px; background: none; border: none; color: #dc3545; cursor: pointer;">Sign Out</button>
       </div>
@@ -136,14 +152,14 @@ window.toggleWidgetView = () => {
 
 window.switchTab = (tab) => {
   const widget = document.getElementById('lab-deployer-widget');
-  ['deploy', 'status', 'credits'].forEach(t => {
+  ['deploy', 'status', 'credits', 'contact'].forEach(t => {
     document.getElementById(`${t}-tab-content`).classList.add('lab-hidden');
     document.getElementById(`tab-${t}`).classList.remove('active');
   });
   document.getElementById(`${tab}-tab-content`).classList.remove('lab-hidden');
   document.getElementById(`tab-${tab}`).classList.add('active');
 
-  if (tab === 'status' || tab === 'credits') {
+  if (['status', 'credits', 'contact'].includes(tab)) {
     widget.classList.add('expanded');
     if (tab === 'status') checkDeploymentStatus();
     if (tab === 'credits') fetchSubscription();
@@ -178,7 +194,8 @@ async function checkDeploymentStatus() {
       copyBox.style.display = "none";
       timerSection.style.display = "none";
       noLabMsg.style.display = "block";
-      noLabMsg.innerText = "ℹ️ There is no lab running";
+      // Handle the case where the API returns subscription info instead of lab info
+      noLabMsg.innerText = (data.outputs && data.outputs.msg) ? "ℹ️ No lab running" : (data.outputs || "ℹ️ There is no lab running");
       clearInterval(countdownInterval);
     }
   } catch (e) { document.getElementById("no-lab-msg").innerText = "ℹ️ There is no lab running"; }
@@ -265,20 +282,16 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById("logged-out-view").style.display = "none";
     document.getElementById("auth-tabs").style.display = "flex";
     document.getElementById("footer-actions").style.display = "block";
-    
-    // NOW SHOW THE DEPLOYER CONTENT UPON LOGIN
     document.getElementById("deploy-tab-content").classList.remove('lab-hidden');
-    
     loadChapters();
     checkDeploymentStatus();
   } else {
     document.getElementById("logged-out-view").style.display = "block";
     document.getElementById("auth-tabs").style.display = "none";
     document.getElementById("footer-actions").style.display = "none";
-    
-    // HIDE THE DEPLOYER CONTENT UPON LOGOUT
     document.getElementById("deploy-tab-content").classList.add('lab-hidden');
-    
+    // Also hide other contents on logout
+    ['status', 'credits', 'contact'].forEach(t => document.getElementById(`${t}-tab-content`).classList.add('lab-hidden'));
     clearInterval(countdownInterval);
   }
 });
