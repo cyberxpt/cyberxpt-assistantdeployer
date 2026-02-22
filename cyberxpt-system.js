@@ -1,7 +1,7 @@
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-// --- 1. INJECT CSS ---
+// 1. INJECT CSS INTO THE PAGE
 const style = document.createElement('style');
 style.textContent = `
   #lab-deployer-widget {
@@ -41,7 +41,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// --- 2. INJECT HTML STRUCTURE ---
+// 2. INJECT HTML INTO THE PAGE
 const widgetDiv = document.createElement('div');
 widgetDiv.id = 'lab-deployer-widget';
 widgetDiv.innerHTML = `
@@ -110,7 +110,7 @@ widgetDiv.innerHTML = `
 `;
 document.body.appendChild(widgetDiv);
 
-// --- 3. LOGIC & FIREBASE ---
+// 3. FIREBASE & LOGIC
 const firebaseConfig = {
   apiKey: "AIzaSyAST9H3CCj8nrJuNUq0h4jqsyKl10anBrw",
   authDomain: "personal-web-a7f48.firebaseapp.com",
@@ -123,7 +123,6 @@ const auth = getAuth(app);
 let countdownInterval = null;
 const FULL_DASH_ARRAY = 283;
 
-// Attach functions to window for HTML onclick events
 window.toggleWidgetView = () => {
   const main = document.getElementById('widget-main');
   const widget = document.getElementById('lab-deployer-widget');
@@ -164,7 +163,7 @@ async function checkDeploymentStatus() {
     const timerSection = document.getElementById("active-timer-section");
     const copyBox = document.getElementById("copyContainer");
     const noLabMsg = document.getElementById("no-lab-msg");
-    
+
     if (res.ok && data.deployed) {
       copyBox.style.display = "block";
       timerSection.style.display = "block";
@@ -204,7 +203,7 @@ function startDestroyCountdown(destroyTimeISO, startTimeISO) {
     const m = Math.floor((timeLeft % 3600) / 60);
     const s = Math.floor(timeLeft % 60);
     label.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    
+
     path.classList.remove("green", "orange", "red");
     if (timeLeft <= 300) path.classList.add("red");
     else if (timeLeft <= 600) path.classList.add("orange");
@@ -301,7 +300,7 @@ async function fetchSubscription() {
   try {
     const idToken = await auth.currentUser.getIdToken();
     const res = await fetch("https://labdep.tehwinsam.com/api/subscription", {
-      method: "POST", 
+      method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` }
     });
     const data = await res.json();
