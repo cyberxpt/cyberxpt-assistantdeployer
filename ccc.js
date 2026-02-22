@@ -365,10 +365,27 @@ async function loadChapters() {
     const unitId = idMatch[1];
     const res = await fetch(`https://raw.githubusercontent.com/cyberxpt/labtracker/refs/heads/main/${unitId}.txt`);
     if (!res.ok) throw new Error();
+    
     const text = await res.text();
-    const options = text.split("\n").filter(l => l.trim()).map(c => `<option value="${c.trim()}">${c.trim()}</option>`).join("");
-    document.getElementById("chapter").innerHTML = options || '<option value="invalid">Unit file is empty</option>';
-  } catch (e) { document.getElementById("chapter").innerHTML = '<option value="invalid">No labs available</option>'; }
+    const lines = text.split("\n").filter(l => l.trim());
+    
+    let optionsHtml = "";
+    
+    lines.forEach(line => {
+      // Split the line by comma: "chapter0,walkthrough & exercise"
+      // parts[0] is "chapter0" (The Value)
+      // parts[1] is "walkthrough & exercise" (The Label)
+      const parts = line.split(",");
+      const val = parts[0].trim();
+      const label = parts[1] ? parts[1].trim() : val; // Fallback to value if no comma exists
+      
+      optionsHtml += `<option value="${val}">${label}</option>`;
+    });
+
+    document.getElementById("chapter").innerHTML = optionsHtml || '<option value="invalid">Unit file is empty</option>';
+  } catch (e) { 
+    document.getElementById("chapter").innerHTML = '<option value="invalid">No labs available</option>'; 
+  }
 }
 
 window.loginWithGoogle = () => signInWithPopup(auth, new GoogleAuthProvider());
