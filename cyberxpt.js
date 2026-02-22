@@ -1,7 +1,7 @@
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-// 1. INJECT CSS INTO THE PAGE
+// 1. INJECT CSS
 const style = document.createElement('style');
 style.textContent = `
   #lab-deployer-widget {
@@ -41,7 +41,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// 2. INJECT HTML INTO THE PAGE
+// 2. INJECT HTML
 const widgetDiv = document.createElement('div');
 widgetDiv.id = 'lab-deployer-widget';
 widgetDiv.innerHTML = `
@@ -63,12 +63,14 @@ widgetDiv.innerHTML = `
         <p style="font-size: 13px;">Please login to continue</p>
         <button onclick="loginWithGoogle()" style="width:100%; background:#007bff; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer;">Sign in with Google</button>
       </div>
-      <div id="deploy-tab-content" class="tab-content">
+      
+      <div id="deploy-tab-content" class="tab-content lab-hidden">
         <label style="font-size:12px; color:#666;">Select Chapter:</label>
         <select id="chapter" style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc;"><option value="invalid">Loading Labs...</option></select>
         <button id="deployBtn" onclick="deployLab()" style="width:100%; background:#007bff; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">🚀 Deploy Lab</button>
         <div id="output" style="font-size: 12px; margin-top:10px; color:#007bff; white-space: pre-wrap;"></div>
       </div>
+
       <div id="status-tab-content" class="tab-content lab-hidden">
         <div id="copyContainer" style="display:none;">
           <div style="color: #aaa; margin-bottom: 5px; font-size: 10px;">REMOTE TERMINAL ACCESS:</div>
@@ -263,12 +265,20 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById("logged-out-view").style.display = "none";
     document.getElementById("auth-tabs").style.display = "flex";
     document.getElementById("footer-actions").style.display = "block";
+    
+    // NOW SHOW THE DEPLOYER CONTENT UPON LOGIN
+    document.getElementById("deploy-tab-content").classList.remove('lab-hidden');
+    
     loadChapters();
     checkDeploymentStatus();
   } else {
     document.getElementById("logged-out-view").style.display = "block";
     document.getElementById("auth-tabs").style.display = "none";
     document.getElementById("footer-actions").style.display = "none";
+    
+    // HIDE THE DEPLOYER CONTENT UPON LOGOUT
+    document.getElementById("deploy-tab-content").classList.add('lab-hidden');
+    
     clearInterval(countdownInterval);
   }
 });
