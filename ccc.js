@@ -9,19 +9,31 @@ style.textContent = `
     z-index: 2147483647 !important; background: #ffffff;
     border: 1px solid #ddd; border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.2); font-family: sans-serif;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); isolation: isolate; overflow: hidden;
+    transition: width 0.3s ease, height 0.3s ease; /* Removed 'all' to prevent lag during drag */
+    isolation: isolate; overflow: hidden;
+    touch-action: none; /* Prevents scrolling while dragging on mobile */
   }
   #lab-deployer-widget.expanded:not(.lab-hidden-state) { width: 550px; min-height: 480px; }
   #lab-deployer-widget.lab-hidden-state { width: 260px !important; height: 45px !important; }
-  .widget-header { padding: 10px 15px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; height: 45px; }
+  
+  .widget-header { 
+    padding: 10px 15px; background: #f8f9fa; border-bottom: 1px solid #eee; 
+    display: flex; justify-content: space-between; align-items: center; height: 45px; 
+    cursor: move; /* Indication that it is draggable */
+    user-select: none;
+  }
+
   .status-indicator { height: 8px; width: 8px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px; animation: pulse-green 2s infinite; vertical-align: middle; }
   @keyframes pulse-green { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(40, 167, 69, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); } }
+  
   .tabs { display: flex; background: #eee; padding: 5px 10px 0; overflow-x: auto; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
   .tab-btn { padding: 8px 12px; border: none; background: #ddd; cursor: pointer; border-radius: 5px 5px 0 0; margin-right: 5px; font-size: 12px; color: #666; white-space: nowrap; }
   .tab-btn.active { background: #fff; color: #007bff; font-weight: bold; border: 1px solid #ddd; border-bottom: none; }
+  
   .content-area { padding: 15px; }
   .lab-hidden { display: none !important; }
+  
   .timer-box { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
   .base-timer { position: relative; width: 60px; height: 60px; }
   .base-timer__svg { transform: scaleX(-1); }
@@ -32,12 +44,15 @@ style.textContent = `
   .base-timer__path-remaining.orange { color: #fd7e14; }
   .base-timer__path-remaining.red { color: #dc3545; }
   .base-timer__label { position: absolute; width: 60px; height: 60px; top: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; font-family: monospace; color: #333; }
+  
   #copyContainer { position: relative; background: #1c1c1c; color: #eee; border-radius: 8px; padding: 15px; font-family: monospace; font-size: 12px; }
   #CommandtoPasteRun { white-space: pre-wrap; word-break: break-word; margin: 0; color: #00ff00; max-height: 180px; overflow-y: auto; }
   #instructionText { margin-top: 10px; font-size: 11px; color: #00f9e2; border-top: 1px solid #333; padding-top: 8px; line-height: 1.4; }
+  
   .status-actions { display: flex; gap: 10px; margin-top: 15px; }
   .btn-ext { background: #28a745; color: white; border: none; padding: 10px; border-radius: 6px; flex: 1; cursor: pointer; font-weight: bold; }
   .btn-des { background: darkred; color: white; border: none; padding: 10px; border-radius: 6px; flex: 1; cursor: pointer; font-weight: bold; }
+  
   .credit-card-box { text-align:center; padding: 20px; background: #f0fdf4; border-radius: 8px; border: 1px solid #dcfce7; }
   .contact-box { text-align: center; padding: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; }
   .email-link { color: #007bff; font-weight: bold; text-decoration: none; font-size: 14px; display: block; margin: 10px 0; }
@@ -49,12 +64,12 @@ document.head.appendChild(style);
 const widgetDiv = document.createElement('div');
 widgetDiv.id = 'lab-deployer-widget';
 widgetDiv.innerHTML = `
-  <div class="widget-header">
-    <div style="display: flex; align-items: center;">
+  <div class="widget-header" id="drag-handle">
+    <div style="display: flex; align-items: center; pointer-events: none;">
       <span class="status-indicator"></span>
       <h4 style="margin:0; font-size:14px; color: #333;">CyberXPT Lab</h4>
     </div>
-    <button id="toggle-visibility-btn" onclick="toggleWidgetView()" style="background:none; border:none; cursor:pointer; font-size: 20px; font-weight: bold; color: #666; width:30px;">−</button>
+    <button id="toggle-visibility-btn" onclick="toggleWidgetView()" style="background:none; border:none; cursor:pointer; font-size: 20px; font-weight: bold; color: #666; width:30px; position: relative; z-index: 10;">−</button>
   </div>
   <div id="widget-main">
     <div class="tabs" id="auth-tabs" style="display:none;">
@@ -128,7 +143,52 @@ widgetDiv.innerHTML = `
 `;
 document.body.appendChild(widgetDiv);
 
-// 3. FIREBASE & LOGIC
+// 3. DRAGGABLE LOGIC
+function makeDraggable(el) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  const header = el.querySelector(".widget-header");
+
+  header.onmousedown = dragMouseDown;
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    if (e.target.id === 'toggle-visibility-btn') return;
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    
+    let newTop = el.offsetTop - pos2;
+    let newLeft = el.offsetLeft - pos1;
+
+    // Boundary check
+    if (newTop < 0) newTop = 0;
+    if (newLeft < 0) newLeft = 0;
+    if (newTop + el.offsetHeight > window.innerHeight) newTop = window.innerHeight - el.offsetHeight;
+    if (newLeft + el.offsetWidth > window.innerWidth) newLeft = window.innerWidth - el.offsetWidth;
+
+    el.style.top = newTop + "px";
+    el.style.left = newLeft + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+makeDraggable(widgetDiv);
+
+// 4. FIREBASE & LOGIC
 const firebaseConfig = {
   apiKey: "AIzaSyAST9H3CCj8nrJuNUq0h4jqsyKl10anBrw",
   authDomain: "personal-web-a7f48.firebaseapp.com",
@@ -194,7 +254,6 @@ async function checkDeploymentStatus() {
       copyBox.style.display = "none";
       timerSection.style.display = "none";
       noLabMsg.style.display = "block";
-      // Handle the case where the API returns subscription info instead of lab info
       noLabMsg.innerText = (data.outputs && data.outputs.msg) ? "ℹ️ No lab running" : (data.outputs || "ℹ️ There is no lab running");
       clearInterval(countdownInterval);
     }
@@ -290,7 +349,6 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById("auth-tabs").style.display = "none";
     document.getElementById("footer-actions").style.display = "none";
     document.getElementById("deploy-tab-content").classList.add('lab-hidden');
-    // Also hide other contents on logout
     ['status', 'credits', 'contact'].forEach(t => document.getElementById(`${t}-tab-content`).classList.add('lab-hidden'));
     clearInterval(countdownInterval);
   }
