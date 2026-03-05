@@ -118,7 +118,7 @@
     .lab-message-text { font-size: 15px; font-weight: 400; color: rgba(180,230,255,.9); line-height: 1.55; letter-spacing: -.1px; white-space: pre-wrap; }
     .lab-modal-footer { padding: 12px 16px 20px; position: relative; z-index: 3; }
     .lab-btn-ack {
-      width: 100%; padding: 15px; border-radius: 16px; border: none; cursor: pointer;
+      width: 100%; padding: 15px; border-radius: 16px; border: none; cursor: not-allowed;
       font-family: -apple-system,'Helvetica Neue',sans-serif; font-size: 16px; font-weight: 600; letter-spacing: -.2px;
       position: relative; overflow: hidden;
       background: linear-gradient(160deg, rgba(0,180,255,.35) 0%, rgba(0,100,200,.2) 50%, rgba(0,60,150,.15) 100%);
@@ -128,14 +128,29 @@
       box-shadow: 0 0 20px rgba(0,150,255,.2), 0 4px 16px rgba(0,0,0,.3);
       text-shadow: 0 0 10px rgba(0,200,255,.4);
       transition: transform .14s ease, box-shadow .14s ease;
+      opacity: 0.65;
     }
     .lab-btn-ack::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
       background: linear-gradient(180deg, rgba(0,200,255,.12) 0%, transparent 100%);
-      border-radius: 16px 16px 0 0; pointer-events: none;
+      border-radius: 16px 16px 0 0; pointer-events: none; z-index: 2;
     }
-    .lab-btn-ack:hover { transform: scale(1.015); box-shadow: 0 0 28px rgba(0,180,255,.35), 0 4px 16px rgba(0,0,0,.3); }
-    .lab-btn-ack:active { transform: scale(.97); }
+    .lab-btn-ack::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, rgba(0,180,255,.28) 0%, rgba(0,220,255,.18) 100%);
+      border-radius: 16px;
+      transform: translateX(-100%);
+      transition: none;
+      z-index: 1;
+    }
+    .lab-btn-ack.ack-counting::after {
+      transform: translateX(0%);
+      transition: transform 3s linear;
+    }
+    .lab-btn-ack.ack-ready { cursor: pointer; opacity: 1; }
+    .lab-btn-ack.ack-ready:hover { transform: scale(1.015); box-shadow: 0 0 28px rgba(0,180,255,.35), 0 4px 16px rgba(0,0,0,.3); }
+    .lab-btn-ack.ack-ready:active { transform: scale(.97); }
+    .lab-btn-ack span { position: relative; z-index: 3; }
   `;
   document.head.appendChild(style);
 
@@ -155,7 +170,7 @@
         </div>
       </div>
       <div class="lab-modal-footer">
-        <button class="lab-btn-ack" id="labAckBtn">Acknowledge</button>
+        <button class="lab-btn-ack" id="labAckBtn" disabled><span id="labAckLabel">Read message — 3s</span></button>
       </div>
     </div>
   `;
@@ -258,16 +273,42 @@
   const showNotification = (message) => {
     document.getElementById('labMessageText').textContent = message;
     notifOverlay.classList.add('visible');
-    // Widget stays blocked while modal is visible
+
+    // ── 3-second countdown before button becomes clickable ──
+    const btn = document.getElementById('labAckBtn');
+    const label = document.getElementById('labAckLabel');
+    let seconds = 3;
+
+    // Tick label immediately
+    label.textContent = `Read message — ${seconds}s`;
+
+    // Trigger the CSS progress bar fill (must be on next frame so transition fires)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { btn.classList.add('ack-counting'); });
+    });
+
+    const tick = setInterval(() => {
+      seconds--;
+      if (seconds > 0) {
+        label.textContent = `Read message — ${seconds}s`;
+      } else {
+        clearInterval(tick);
+        label.textContent = 'Acknowledge';
+        btn.disabled = false;
+        btn.classList.add('ack-ready');
+      }
+    }, 1000);
   };
 
   const acknowledgeNotification = () => {
+    const btn = document.getElementById('labAckBtn');
+    if (btn.disabled) return; // Guard: ignore clicks during countdown
     const modal = document.getElementById('labModal');
     modal.classList.add('closing');
     setTimeout(() => {
       notifOverlay.classList.remove('visible');
       modal.classList.remove('closing');
-      unblockWidget(); // ← Only now the deployer becomes interactive
+      unblockWidget();
     }, 380);
   };
 
