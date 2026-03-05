@@ -71,31 +71,30 @@
     .email-link { color: #007bff; font-weight: bold; text-decoration: none; font-size: 14px; display: block; margin: 10px 0; }
     .btn-email { display: inline-block; background: #007bff; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 12px; font-weight: bold; }
 
-    /* ── NOTIFICATION MODAL ── */
+    /* ── NOTIFICATION MODAL — DEEP OCEAN THEME ── */
     #lab-notification-overlay {
       position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
       z-index: 2147483647 !important;
       opacity: 0; pointer-events: none;
       transition: opacity .3s ease;
-      /* Semi-transparent backdrop to visually show widget is behind */
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
+      background: radial-gradient(ellipse at center, rgba(0,20,60,.72) 0%, rgba(0,5,25,.82) 100%);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
     }
     #lab-notification-overlay.visible { opacity: 1; pointer-events: all; }
 
     .lab-modal {
       width: 520px; border-radius: 28px; overflow: hidden; position: relative;
-      background: linear-gradient(135deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.10) 40%, rgba(255,255,255,.06) 100%);
+      background: linear-gradient(135deg, rgba(0,30,80,.92) 0%, rgba(0,15,50,.88) 50%, rgba(0,40,100,.84) 100%);
       backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
-      border: 1px solid rgba(255,255,255,.32);
-      box-shadow: 0 2px 0 rgba(255,255,255,.45) inset, 0 32px 64px rgba(0,0,0,.38), 0 8px 24px rgba(0,0,0,.22);
+      border: 1px solid rgba(0,200,255,.25);
+      box-shadow: 0 0 0 1px rgba(0,100,200,.2) inset, 0 32px 64px rgba(0,0,0,.55), 0 0 40px rgba(0,150,255,.12), 0 8px 24px rgba(0,0,0,.35);
       font-family: -apple-system,'Helvetica Neue',sans-serif;
       animation: labFloatIn .55s cubic-bezier(.34,1.4,.64,1);
     }
     .lab-modal::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 48%;
-      background: linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 100%);
+      background: linear-gradient(180deg, rgba(0,180,255,.08) 0%, transparent 100%);
       border-radius: 28px 28px 0 0; pointer-events: none; z-index: 2;
     }
     .lab-modal.closing { animation: labFloatOut .35s cubic-bezier(.4,0,.2,1) forwards; }
@@ -103,36 +102,39 @@
     @keyframes labFloatOut { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(.9) translateY(-16px); opacity: 0; } }
 
     .lab-modal-header {
-      background: rgba(0,0,0,.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,255,255,.10); padding: 18px 24px;
+      background: linear-gradient(135deg, rgba(0,50,120,.92), rgba(0,20,70,.92));
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,200,255,.2); padding: 18px 24px;
       display: flex; align-items: center; gap: 12px; position: relative; z-index: 3;
     }
     .lab-modal-icon { font-size: 20px; }
-    .lab-modal-title { font-size: 15px; font-weight: 800; color: rgba(255,255,255,.92); letter-spacing: .02em; }
+    .lab-modal-title { font-size: 15px; font-weight: 800; color: rgba(100,220,255,.95); letter-spacing: .02em; }
     .lab-modal-body { padding: 22px 20px 16px; position: relative; z-index: 3; }
-    .lab-modal-label { font-size: 10px; font-weight: 600; color: rgba(0,0,0,.5); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 10px; }
+    .lab-modal-label { font-size: 10px; font-weight: 600; color: rgba(0,200,255,.55); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 10px; }
     .lab-message-card {
-      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
-      border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 0 rgba(255,255,255,.1) inset;
+      background: rgba(0,100,200,.12); border: 1px solid rgba(0,200,255,.18);
+      border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 0 rgba(0,200,255,.1) inset;
     }
-    .lab-message-text { font-size: 15px; font-weight: 400; color: rgba(0,0,0,.85); line-height: 1.55; letter-spacing: -.1px; white-space: pre-wrap; }
+    .lab-message-text { font-size: 15px; font-weight: 400; color: rgba(180,230,255,.9); line-height: 1.55; letter-spacing: -.1px; white-space: pre-wrap; }
     .lab-modal-footer { padding: 12px 16px 20px; position: relative; z-index: 3; }
     .lab-btn-ack {
       width: 100%; padding: 15px; border-radius: 16px; border: none; cursor: pointer;
       font-family: -apple-system,'Helvetica Neue',sans-serif; font-size: 16px; font-weight: 600; letter-spacing: -.2px;
       position: relative; overflow: hidden;
-      background: linear-gradient(160deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.07) 100%);
-      color: rgba(0,0,0,.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,.32);
-      box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 4px 16px rgba(0,0,0,.18);
-      transition: transform .14s ease;
+      background: linear-gradient(160deg, rgba(0,180,255,.35) 0%, rgba(0,100,200,.2) 50%, rgba(0,60,150,.15) 100%);
+      color: rgba(180,240,255,.95);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(0,200,255,.3);
+      box-shadow: 0 0 20px rgba(0,150,255,.2), 0 4px 16px rgba(0,0,0,.3);
+      text-shadow: 0 0 10px rgba(0,200,255,.4);
+      transition: transform .14s ease, box-shadow .14s ease;
     }
     .lab-btn-ack::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
-      background: linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 100%);
+      background: linear-gradient(180deg, rgba(0,200,255,.12) 0%, transparent 100%);
       border-radius: 16px 16px 0 0; pointer-events: none;
     }
-    .lab-btn-ack:hover { transform: scale(1.015); }
+    .lab-btn-ack:hover { transform: scale(1.015); box-shadow: 0 0 28px rgba(0,180,255,.35), 0 4px 16px rgba(0,0,0,.3); }
     .lab-btn-ack:active { transform: scale(.97); }
   `;
   document.head.appendChild(style);
