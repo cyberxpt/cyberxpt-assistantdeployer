@@ -530,7 +530,10 @@
       warning.style.display   = 'none';
     }
   };
-  document.getElementById('kali-toggle-checkbox').onchange = (e) => handleKaliToggle(e.target.checked);
+  document.getElementById('kali-toggle-checkbox').addEventListener('change', function () {
+    if (this.disabled) { this.checked = false; return; } // hard stop if locked
+    handleKaliToggle(this.checked);
+  });
 
   // ─── 8. FIREBASE SETUP ───────────────────────────────────────────────────────
   const firebaseConfig = {
@@ -816,8 +819,43 @@
       const res = await fetch(`https://raw.githubusercontent.com/cyberxpt/labtracker/refs/heads/main/${idMatch[1]}.txt`);
       if (!res.ok) throw new Error();
       const lines = (await res.text()).split("\n").filter(l => l.trim());
+
+      // First line is the Kali flag: "1" = enabled, "0" or absent = disabled
+      const firstLine = lines[0]?.trim();
+      const kaliFlag  = (firstLine === "0" || firstLine === "1") ? parseInt(firstLine) : null;
+      const chapterLines = kaliFlag !== null ? lines.slice(1) : lines;
+
+      const kaliWrapper  = document.getElementById("kali-toggle-wrapper");
+      const kaliCheckbox = document.getElementById("kali-toggle-checkbox");
+      const kaliTrack    = document.getElementById("kali-toggle-track");
+      const kaliThumb    = document.getElementById("kali-toggle-thumb");
+      const kaliLabel    = document.getElementById("kali-status-label");
+
+      if (kaliFlag === 1) {
+        // Explicitly enabled — unlock toggle
+        kaliCheckbox.disabled              = false;
+        kaliWrapper.style.opacity          = "1";
+        kaliWrapper.style.cursor           = "default";
+        kaliWrapper.style.pointerEvents    = "auto";
+        document.querySelector('#kali-toggle-wrapper label').style.cursor = "pointer";
+      } else {
+        // flag is 0, or missing entirely — disable and lock
+        kaliCheckbox.disabled              = true;
+        kaliCheckbox.checked               = false;
+        kaliTrack.style.background         = "#1a1a2e";
+        kaliTrack.style.borderColor        = "#2d3748";
+        kaliThumb.style.background         = "#4a5568";
+        kaliThumb.style.transform          = "translateX(0px)";
+        kaliLabel.style.color              = "#374151";
+        kaliLabel.innerText                = "Not available for this lab";
+        kaliWrapper.style.opacity          = "0.5";
+        kaliWrapper.style.cursor           = "not-allowed";
+        kaliWrapper.style.pointerEvents    = "none";
+        document.getElementById("kali-warning").style.display = "none";
+      }
+
       let optionsHtml = "";
-      lines.forEach(line => {
+      chapterLines.forEach(line => {
         const parts = line.split(",");
         const val   = parts[0].trim();
         const lbl   = parts[1] ? parts[1].trim() : val;
