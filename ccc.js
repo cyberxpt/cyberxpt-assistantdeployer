@@ -640,7 +640,7 @@
     if (auth.currentUser) {
       try {
         const idToken   = await auth.currentUser.getIdToken();
-        const res       = await fetch("https://labdep.tehwinsam.com/api/status", {
+        const res       = await fetch("https://labdep.cyberxpt.com/api/status", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` }
         });
@@ -731,7 +731,7 @@
     try {
       const idToken     = await auth.currentUser.getIdToken();
       const includeKali = document.getElementById("kali-toggle-checkbox").checked;
-      await fetch("https://labdep.tehwinsam.com/api/deploy", {
+      await fetch("https://labdep.cyberxpt.com/api/deploy", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
         body: JSON.stringify({ chapter: document.getElementById("chapter").value, kali: includeKali })
@@ -755,7 +755,7 @@
     sessionStorage.removeItem("lab_status");
     sessionStorage.removeItem("is_deploying");
     switchTab('deploy');
-    await fetch("https://labdep.tehwinsam.com/api/destroy", {
+    await fetch("https://labdep.cyberxpt.com/api/destroy", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` }
     });
@@ -769,7 +769,7 @@
     btn.querySelector('.cell-label').innerText = "Wait...";
     try {
       const idToken = await auth.currentUser.getIdToken();
-      const res = await fetch("https://labdep.tehwinsam.com/api/extend", {
+      const res = await fetch("https://labdep.cyberxpt.com/api/extend", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` }
       });
@@ -793,7 +793,7 @@
     const expiryEl = document.getElementById("expiry-notice");
     try {
       const idToken = await auth.currentUser.getIdToken();
-      const res     = await fetch("https://labdep.tehwinsam.com/api/subscription", {
+      const res     = await fetch("https://labdep.cyberxpt.com/api/subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` }
       });
